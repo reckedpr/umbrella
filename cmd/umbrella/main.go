@@ -1,52 +1,16 @@
 package main
 
 import (
-	"encoding/json"
+	"github.com/reckedpr/umbrella/internal/weather"
+
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/fatih/color"
 	"github.com/joho/godotenv"
 )
-
-type Weather struct {
-	Location Location `json:"location"`
-	Current  Current  `json:"current"`
-	Forecast Forecast `json:"forecast"`
-}
-
-type Location struct {
-	Name    string `json:"name"`
-	Country string `json:"country"`
-}
-
-type Current struct {
-	TempC     float64   `json:"temp_c"`
-	Condition Condition `json:"condition"`
-}
-
-type Forecast struct {
-	ForecastDay []ForecastDay `json:"forecastday"`
-}
-
-type ForecastDay struct {
-	Hour []Hour `json:"hour"`
-}
-
-type Hour struct {
-	TimeEpoch    int64     `json:"time_epoch"`
-	TempC        float64   `json:"temp_c"`
-	Condition    Condition `json:"condition"`
-	ChanceOfRain float64   `json:"chance_of_rain"`
-}
-
-type Condition struct {
-	Text string `json:"text"`
-}
 
 var (
 	yellowBg = color.New(color.FgBlack, color.BgYellow).Add(color.Bold)
@@ -69,26 +33,7 @@ func main() {
 		queryLocation = os.Args[1]
 	}
 
-	res, err := http.Get(fmt.Sprintf("http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&days=2&aqi=no&alerts=no", apiKey, queryLocation))
-	if err != nil {
-		panic(err)
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != 200 {
-		panic("Weather api not available")
-	}
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	var weather Weather
-	err = json.Unmarshal(body, &weather)
-	if err != nil {
-		panic(err)
-	}
+	weather, _ := weather.FetchForecast(apiKey, queryLocation)
 
 	combinedHours := append(weather.Forecast.ForecastDay[0].Hour, weather.Forecast.ForecastDay[1].Hour...)
 
@@ -143,5 +88,3 @@ func main() {
 		fmt.Print(message)
 	}
 }
-
-

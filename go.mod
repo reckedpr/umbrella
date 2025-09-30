@@ -1,4 +1,4 @@
-module reckedpr/umbrella
+module github.com/reckedpr/umbrella
 
 go 1.25.1
 
