@@ -16,7 +16,7 @@ var (
 	muteBg   = color.New(color.FgHiBlack)
 )
 
-func DisplayWeather(w model.Weather) {
+func DisplayWeather(w model.Weather, args model.Args) {
 	hours := append(w.Forecast.ForecastDay[0].Hour, w.Forecast.ForecastDay[1].Hour...)
 
 	fmt.Printf(
@@ -28,7 +28,7 @@ func DisplayWeather(w model.Weather) {
 	lastText := ""
 
 	for _, hour := range hours {
-		var condText string
+		var condText, Temp string
 		date := time.Unix(hour.TimeEpoch, 0)
 
 		if date.Before(time.Now()) || date.After(time.Now().Add(time.Hour*7)) {
@@ -39,7 +39,12 @@ func DisplayWeather(w model.Weather) {
 
 		ChanceOfRainStr := fmt.Sprintf(" %.0f%% ", hour.ChanceOfRain)
 		ChanceOfRainStr = fmt.Sprintf("%-6s", ChanceOfRainStr)
-		TempCStr := fmt.Sprintf("%.0f󰔄", hour.TempC)
+
+		if args.Units == "f" {
+			Temp = fmt.Sprintf("%.0ff", hour.TempF)
+		} else {
+			Temp = fmt.Sprintf("%.0fc", hour.TempC)
+		}
 
 		if hour.ChanceOfRain >= 90 {
 			ChanceOfRainStr = redBg.Sprint(ChanceOfRainStr)
@@ -60,7 +65,7 @@ func DisplayWeather(w model.Weather) {
 		message := fmt.Sprintf(
 			" %s %-3s %s %s\n",
 			dateStr,
-			TempCStr,
+			Temp,
 			ChanceOfRainStr,
 			condText,
 		)
