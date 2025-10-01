@@ -5,48 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/reckedpr/umbrella/internal/model"
 )
 
-type Error struct {
-	Message string `json:"message"`
-}
-
-type Weather struct {
-	Location Location `json:"location"`
-	Current  Current  `json:"current"`
-	Forecast Forecast `json:"forecast"`
-}
-
-type Location struct {
-	Name    string `json:"name"`
-	Country string `json:"country"`
-}
-
-type Current struct {
-	TempC     float64   `json:"temp_c"`
-	Condition Condition `json:"condition"`
-}
-
-type Forecast struct {
-	ForecastDay []ForecastDay `json:"forecastday"`
-}
-
-type ForecastDay struct {
-	Hour []Hour `json:"hour"`
-}
-
-type Hour struct {
-	TimeEpoch    int64     `json:"time_epoch"`
-	TempC        float64   `json:"temp_c"`
-	Condition    Condition `json:"condition"`
-	ChanceOfRain float64   `json:"chance_of_rain"`
-}
-
-type Condition struct {
-	Text string `json:"text"`
-}
-
-func FetchForecast(apiKey, queryLocation string) (Weather, error) {
+func FetchForecast(apiKey, queryLocation string) (model.Weather, error) {
 	res, err := http.Get(fmt.Sprintf("http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&days=2&aqi=no&alerts=no", apiKey, queryLocation))
 	if err != nil {
 		panic(err)
@@ -60,7 +23,7 @@ func FetchForecast(apiKey, queryLocation string) (Weather, error) {
 
 	if res.StatusCode == 400 {
 		var apiError struct {
-			Error Error `json:"error"`
+			Error model.Error `json:"error"`
 		}
 
 		err = json.Unmarshal(body, &apiError)
@@ -75,7 +38,7 @@ func FetchForecast(apiKey, queryLocation string) (Weather, error) {
 		panic("Weather api not available")
 	}
 
-	var weather Weather
+	var weather model.Weather
 	err = json.Unmarshal(body, &weather)
 	if err != nil {
 		panic(err)
